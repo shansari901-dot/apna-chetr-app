@@ -39,7 +39,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0f1729))
-      ..setGeolocationEnabled(true)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
@@ -59,9 +58,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
             }
             _openExternal(url);
             return NavigationDecision.prevent;
-          },
-          onPermissionRequest: (request) {
-            request.grant();
           },
         ),
       )
