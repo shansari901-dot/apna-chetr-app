@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+const String WEBSITE_URL = 'https://shansari901-dot.github.io/Apna-Cheetr/';
 
 void main() {
-  runApp(const ApnaChhetrApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
 }
 
-class ApnaChhetrApp extends StatelessWidget {
-  const ApnaChhetrApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Apna Chhetr',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
-        useMaterial3: true,
-      ),
       home: const WebViewScreen(),
     );
   }
@@ -31,21 +31,72 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController controller;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0b1120))
-      ..loadRequest(Uri.parse('https://shansari901.github.io/apna-chetr-app/'));
+      ..setBackgroundColor(const Color(0xFF0f1729))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            setState(() => _isLoading = true);
+          },
+          onPageFinished: (url) {
+            setState(() => _isLoading = false);
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            final url = request.url;
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+              if (!url.contains('shansari901-dot.github.io')) {
+                _openExternal(url);
+                return NavigationDecision.prevent;
+              }
+              return NavigationDecision.navigate;
+            }
+            _openExternal(url);
+            return NavigationDecision.prevent;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(WEBSITE_URL));
+  }
+
+  Future<void> _openExternal(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Could not launch $url: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: WebViewWidget(controller: controller),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        if (await controller.canGoBack()) {
+          await controller.goBack();
+        } else {
+          if (context.mounted) Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: controller),
+              if (_isLoading)
+                const Center(
+                  child: CircularProgressIndicator(color: Colors.green),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
