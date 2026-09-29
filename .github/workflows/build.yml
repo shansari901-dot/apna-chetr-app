@@ -28,6 +28,13 @@ jobs:
       - name: Create fresh project
         run: flutter create --org com.apnachetr --project-name apna_chhetr --platforms android temp_app
 
+      - name: Add INTERNET permission
+        run: |
+          MANIFEST=temp_app/android/app/src/main/AndroidManifest.xml
+          sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET"/>|' $MANIFEST
+          echo "=== Updated Manifest ==="
+          cat $MANIFEST
+
       - name: Copy code
         run: |
           cp lib/main.dart temp_app/lib/main.dart
