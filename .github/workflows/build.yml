@@ -28,10 +28,10 @@ jobs:
       - name: Create fresh project
         run: flutter create --org com.apnachetr --project-name apna_chhetr --platforms android temp_app
 
-      - name: Add INTERNET permission
+      - name: Add permissions to AndroidManifest
         run: |
           MANIFEST=temp_app/android/app/src/main/AndroidManifest.xml
-          sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET"/>|' $MANIFEST
+          sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>\n    <uses-permission android:name="android.permission.CAMERA"/>|' $MANIFEST
           echo "=== Updated Manifest ==="
           cat $MANIFEST
 
