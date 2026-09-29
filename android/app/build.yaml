@@ -28,6 +28,12 @@ jobs:
       - name: Create fresh project
         run: flutter create --org com.apnachetr --project-name apna_chhetr --platforms android temp_app
 
+      - name: Update Kotlin version
+        run: |
+          SETTINGS=temp_app/android/settings.gradle
+          sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.24"/' $SETTINGS
+          cat $SETTINGS
+
       - name: Add permissions
         run: |
           MANIFEST=temp_app/android/app/src/main/AndroidManifest.xml
