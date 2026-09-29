@@ -1,6 +1,8 @@
-name: apna_chhetr
-description: Apna Chhetr App
+name: apna_chhetr_app
+description: A new Flutter project for Apna Chhetr.
+
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -9,13 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter: ^4.10.0
-  url_launcher: ^6.2.6
+  webview_flutter: ^4.4.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
