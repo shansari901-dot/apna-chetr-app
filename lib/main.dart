@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const String WEBSITE_URL = 'https://shansari901-dot.github.io/Apna-Cheetr/';
@@ -30,83 +30,38 @@ class WebViewScreen extends StatefulWidget {
 }
 
 class _WebViewScreenState extends State<WebViewScreen> {
-  InAppWebViewController? webViewController;
+  late final WebViewController controller;
   bool _isLoading = true;
 
   @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        if (webViewController != null) {
-          if (await webViewController!.canGoBack()) {
-            await webViewController!.goBack();
-          } else {
-            if (context.mounted) Navigator.of(context).pop();
-          }
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              InAppWebView(
-                initialUrlRequest: URLRequest(url: WebUri(WEBSITE_URL)),
-                initialSettings: InAppWebViewSettings(
-                  javaScriptEnabled: true,
-                  geolocationEnabled: true,
-                  useShouldOverrideUrlLoading: true,
-                  mediaPlaybackRequiresUserGesture: false,
-                  allowFileAccess: true,
-                  allowContentAccess: true,
-                  javaScriptCanOpenWindowsAutomatically: true,
-                  supportMultipleWindows: false,
-                ),
-                onWebViewCreated: (controller) {
-                  webViewController = controller;
-                },
-                onLoadStart: (controller, url) {
-                  setState(() => _isLoading = true);
-                },
-                onLoadStop: (controller, url) {
-                  setState(() => _isLoading = false);
-                },
-                shouldOverrideUrlLoading: (controller, action) async {
-                  final url = action.request.url.toString();
-                  if (url.startsWith('http://') || url.startsWith('https://')) {
-                    if (!url.contains('shansari901-dot.github.io')) {
-                      _openExternal(url);
-                      return NavigationActionPolicy.CANCEL;
-                    }
-                    return NavigationActionPolicy.ALLOW;
-                  }
-                  _openExternal(url);
-                  return NavigationActionPolicy.CANCEL;
-                },
-                onPermissionRequest: (controller, request) async {
-                  return PermissionResponse(
-                    resources: request.resources,
-                    action: PermissionResponseAction.GRANT,
-                  );
-                },
-                onGeolocationPermissionsShowPrompt: (controller, origin) async {
-                  return GeolocationPermissionShowPromptResponse(
-                    origin: origin,
-                    allow: true,
-                    retain: true,
-                  );
-                },
-              ),
-              if (_isLoading)
-                const Center(
-                  child: CircularProgressIndicator(color: Colors.green),
-                ),
-            ],
-          ),
+  void initState() {
+    super.initState();
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF0f1729))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            setState(() => _isLoading = true);
+          },
+          onPageFinished: (url) {
+            setState(() => _isLoading = false);
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            final url = request.url;
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+              if (!url.contains('shansari901-dot.github.io')) {
+                _openExternal(url);
+                return NavigationDecision.prevent;
+              }
+              return NavigationDecision.navigate;
+            }
+            _openExternal(url);
+            return NavigationDecision.prevent;
+          },
         ),
-      ),
-    );
+      )
+      ..loadRequest(Uri.parse(WEBSITE_URL));
   }
 
   Future<void> _openExternal(String url) async {
@@ -116,5 +71,33 @@ class _WebViewScreenState extends State<WebViewScreen> {
     } catch (e) {
       debugPrint('Could not launch $url: $e');
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (await controller.canGoBack()) {
+          await controller.goBack();
+        } else {
+          if (context.mounted) Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: controller),
+              if (_isLoading)
+                const Center(
+                  child: CircularProgressIndicator(color: Colors.green),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
