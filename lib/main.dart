@@ -39,6 +39,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0f1729))
+      // 🔥 LOCATION SUPPORT — Yahi line location enable karti hai
+      ..setGeolocationEnabled(true)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
@@ -77,7 +79,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
+      onPopInvoked: (didPop) async {
         if (didPop) return;
         if (await controller.canGoBack()) {
           await controller.goBack();
