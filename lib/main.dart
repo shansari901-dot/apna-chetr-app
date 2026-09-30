@@ -20,10 +20,6 @@ class ApnaChetrApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Apna Chhetr',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
       home: const WebViewScreen(),
     );
   }
@@ -37,26 +33,23 @@ class WebViewScreen extends StatefulWidget {
 }
 
 class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController controller;
-
+  WebViewController? controller;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _startApp();
+    _initializeApp();
   }
 
-  Future<void> _startApp() async {
-    // Android location permission
+  Future<void> _initializeApp() async {
     await Permission.location.request();
 
-    final webViewController = WebViewController();
+    final webController = WebViewController();
 
-    // Android WebView location configuration
-    if (webViewController.platform is AndroidWebViewController) {
+    if (webController.platform is AndroidWebViewController) {
       final androidController =
-          webViewController.platform as AndroidWebViewController;
+          webController.platform as AndroidWebViewController;
 
       await androidController.setGeolocationEnabled(true);
 
@@ -81,26 +74,26 @@ class _WebViewScreenState extends State<WebViewScreen> {
       );
     }
 
-    webViewController
+    webController
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0F1729))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
+          onPageStarted: (url) {
             if (mounted) {
               setState(() {
                 isLoading = true;
               });
             }
           },
-          onPageFinished: (String url) {
+          onPageFinished: (url) {
             if (mounted) {
               setState(() {
                 isLoading = false;
               });
             }
           },
-          onNavigationRequest: (NavigationRequest request) {
+          onNavigationRequest: (request) {
             final url = request.url;
 
             if (url.startsWith('http://') ||
@@ -120,19 +113,17 @@ class _WebViewScreenState extends State<WebViewScreen> {
       )
       ..loadRequest(Uri.parse(websiteUrl));
 
-    controller = webViewController;
-
     if (mounted) {
-      setState(() {});
+      setState(() {
+        controller = webController;
+      });
     }
   }
 
   Future<void> _openExternal(String url) async {
     try {
-      final uri = Uri.parse(url);
-
       await launchUrl(
-        uri,
+        Uri.parse(url),
         mode: LaunchMode.externalApplication,
       );
     } catch (e) {
@@ -142,7 +133,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isInitialized) {
+    if (controller == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF0F1729),
         body: Center(
@@ -157,9 +148,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            WebViewWidget(
-              controller: controller,
-            ),
+            WebViewWidget(controller: controller!),
 
             if (isLoading)
               const Center(
@@ -171,28 +160,5 @@ class _WebViewScreenState extends State<WebViewScreen> {
         ),
       ),
     );
-  }
-
-  bool get isInitialized => _controllerReady;
-
-  bool _controllerReady = false;
-
-  @override
-  void setState(VoidCallback fn) {
-    if (mounted) {
-      super.setState(fn);
-
-      if (controllerInitialized) {
-        _controllerReady = true;
-      }
-    }
-  }
-
-  bool get controllerInitialized {
-    try {
-      return controller != null;
-    } catch (_) {
-      return false;
-    }
   }
 }
