@@ -36,8 +36,21 @@ jobs:
       - name: Copy AndroidManifest.xml
         run: |
           cp android_config/AndroidManifest.xml temp_app/android/app/src/main/AndroidManifest.xml
-          echo "=== Final Manifest ==="
-          cat temp_app/android/app/src/main/AndroidManifest.xml
+
+      - name: Update Gradle settings for WebView
+        working-directory: temp_app
+        run: |
+          # 1. Update minSdkVersion to 21 (WebView के लिए जरूरी)
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/' android/app/build.gradle
+          
+          # 2. Update compileSdkVersion
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/' android/app/build.gradle
+          
+          # 3. Enable multidex
+          sed -i 's/multiDexEnabled true/multiDexEnabled true/' android/app/build.gradle
+          
+          echo "=== build.gradle content ==="
+          cat android/app/build.gradle
 
       - name: Get deps
         working-directory: temp_app
