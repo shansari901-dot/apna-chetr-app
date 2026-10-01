@@ -20,23 +20,17 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.22.0"
+          flutter-version: "3.24.0"
           channel: stable
 
-      - name: Create Fresh Flutter Project
-        run: |
-          flutter create \
-            --org com.apnachetr \
-            --project-name apna_chhetr_test \
-            --platforms android \
-            test_app
+      - name: Get Flutter Dependencies
+        run: flutter pub get
 
-      - name: Build Test APK
-        working-directory: test_app
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload Test APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apna-chetr-test-apk
-          path: test_app/build/app/outputs/flutter-apk/app-release.apk
+          name: apna-chetr-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
