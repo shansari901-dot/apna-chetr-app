@@ -43,7 +43,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Future<void> _initializeApp() async {
-    await Permission.locationWhenInUse.request();
+    final locationStatus = await Permission.location.request();
 
     final webController = WebViewController();
 
@@ -55,16 +55,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
       await androidController.setGeolocationPermissionsPromptCallbacks(
         onShowPrompt: (request) async {
-          final status = await Permission.locationWhenInUse.status;
+          final status = await Permission.location.status;
 
-          if (status.isGranted) {
+          if (status.isGranted || locationStatus.isGranted) {
             return const GeolocationPermissionsResponse(
               allow: true,
               retain: true,
             );
           }
 
-          final result = await Permission.locationWhenInUse.request();
+          final result = await Permission.location.request();
 
           return GeolocationPermissionsResponse(
             allow: result.isGranted,
@@ -96,8 +96,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           onNavigationRequest: (request) {
             final url = request.url;
 
-            if (url.startsWith('http://') ||
-                url.startsWith('https://')) {
+            if (url.startsWith('http://') || url.startsWith('https://')) {
               if (url.contains('shansari901-dot.github.io')) {
                 return NavigationDecision.navigate;
               }
@@ -122,10 +121,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   Future<void> _openExternal(String url) async {
     try {
-      await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      );
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     } catch (e) {
       debugPrint('Could not open $url: $e');
     }
@@ -149,7 +148,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
         child: Stack(
           children: [
             WebViewWidget(controller: controller!),
-
             if (isLoading)
               const Center(
                 child: CircularProgressIndicator(
