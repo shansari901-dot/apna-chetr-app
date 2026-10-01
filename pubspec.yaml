@@ -11,10 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  webview_flutter: 4.8.0
-  webview_flutter_android: 3.16.9
-  url_launcher: 6.2.6
-  permission_handler: 11.3.1
+  webview_flutter: ^4.10.0
+  webview_flutter_android: ^4.0.0
+  url_launcher: ^6.3.1
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

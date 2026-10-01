@@ -43,7 +43,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Future<void> _initializeApp() async {
-    await Permission.location.request();
+    await Permission.locationWhenInUse.request();
 
     final webController = WebViewController();
 
@@ -55,7 +55,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
       await androidController.setGeolocationPermissionsPromptCallbacks(
         onShowPrompt: (request) async {
-          final status = await Permission.location.status;
+          final status = await Permission.locationWhenInUse.status;
 
           if (status.isGranted) {
             return const GeolocationPermissionsResponse(
@@ -64,7 +64,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             );
           }
 
-          final result = await Permission.location.request();
+          final result = await Permission.locationWhenInUse.request();
 
           return GeolocationPermissionsResponse(
             allow: result.isGranted,
